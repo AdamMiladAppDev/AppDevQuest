@@ -1,0 +1,63 @@
+name: Backend → Azure App Service
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - "Backend/**"
+      - ".github/workflows/backend.yml"
+  workflow_dispatch: {}
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    env:
+      AZURE_WEBAPP_NAME: ${{ secrets.AZURE_WEBAPP_NAME }}  
+      AZURE_RG: ${{ secrets.AZURE_RG }}                    
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.x"
+
+      - name: Restore
+        working-directory: Backend
+        run: dotnet restore
+
+      - name: Build
+        working-directory: Backend
+        run: dotnet build --configuration Release --no-restore
+
+      - name: Publish
+        working-directory: Backend
+        run: dotnet publish -c Release -o out
+
+      - name: Azure Login (OIDC or service principal)
+        uses: azure/login@v2
+        with:
+          # If you created federated credentials, this block is enough:
+          # client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          # tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          # subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+          # Otherwise use the JSON service principal:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Ensure App Settings exist
+        uses: azure/CLI@v2
+        with:
+          inlineScript: |
+            az webapp config appsettings set \
+              -g "${{ env.AZURE_RG }}" -n "${{ env.AZURE_WEBAPP_NAME }}" \
+              --settings \
+                "ConnectionStrings__Default=${{ secrets.POSTGRESQL_CONNECTIONSTRING }}" \
+                "ASPNETCORE_URLS=http://0.0.0.0:8080" \
+                "ASPNETCORE_ENVIRONMENT=Production"
+
+      - name: Deploy package
+        uses: azure/webapps-deploy@v3
+        with:
+          app-name: ${{ env.AZURE_WEBAPP_NAME }}
+          package: backend/out
