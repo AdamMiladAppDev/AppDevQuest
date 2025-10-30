@@ -5,7 +5,9 @@ using Backend.Repository;
 using Backend.Services.Email;
 using Backend.Services.Security;
 using Backend.Settings;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
+using System.Collections.Generic;
 using System.Text.Json;
 using System.Linq;
 
@@ -18,12 +20,14 @@ namespace Backend.Services.Surveys
         private readonly TokenService _tokenService;
         private readonly ApplicationSettings _appSettings;
         private readonly ILogger<SurveyService> _logger;
+        private readonly IHostEnvironment _hostEnvironment;
 
         public SurveyService(
             ISurveyRepository repository,
             IEmailSender emailSender,
             TokenService tokenService,
             IOptions<ApplicationSettings> appSettings,
+            IHostEnvironment hostEnvironment,
             ILogger<SurveyService> logger)
         {
             _repository = repository;
@@ -31,6 +35,7 @@ namespace Backend.Services.Surveys
             _tokenService = tokenService;
             _appSettings = appSettings.Value;
             _logger = logger;
+            _hostEnvironment = hostEnvironment;
         }
 
         public async Task<SurveyDetailsResponse> CreateSurveyAsync(
@@ -101,13 +106,15 @@ namespace Backend.Services.Surveys
             return MapToDetailsResponse(survey, stats.invitations, stats.responses);
         }
 
-        public async Task SendInvitationsAsync(Guid surveyId, SendInvitationsRequest request, CancellationToken cancellationToken)
+        public async Task<IReadOnlyList<InvitationPreviewResponse>> SendInvitationsAsync(Guid surveyId, SendInvitationsRequest request, CancellationToken cancellationToken)
         {
             var survey = await _repository.GetSurveyAsync(surveyId, cancellationToken);
             if (survey is null)
             {
                 throw new InvalidOperationException("Survey not found.");
             }
+
+            var previews = new List<InvitationPreviewResponse>();
 
             var normalizedEmails = request.Emails
                 .Where(e => !string.IsNullOrWhiteSpace(e))
@@ -136,8 +143,19 @@ namespace Backend.Services.Surveys
                 await _repository.AddInvitationAsync(invitation, cancellationToken);
 
                 var link = BuildResponseLink(token);
+                if (_hostEnvironment.IsDevelopment())
+                {
+                    previews.Add(new InvitationPreviewResponse
+                    {
+                        Email = email,
+                        Link = link
+                    });
+                }
+
                 await _emailSender.SendSurveyInvitationAsync(email, survey.Title, link, cancellationToken);
             }
+
+            return previews;
         }
 
         public async Task<SurveyForResponseDto?> GetSurveyForTokenAsync(string token, CancellationToken cancellationToken)

@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "/Users/adam.miled/Library/CloudStorage/OneDrive-HarvestGroup/Desktop/AppDevQuest/Backend/Backend.csproj": {}
+    "/Users/adam.miled/GitHub/AppDevQuest/Backend/Backend.csproj": {}
   },
   "projects": {
-    "/Users/adam.miled/Library/CloudStorage/OneDrive-HarvestGroup/Desktop/AppDevQuest/Backend/Backend.csproj": {
+    "/Users/adam.miled/GitHub/AppDevQuest/Backend/Backend.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "/Users/adam.miled/Library/CloudStorage/OneDrive-HarvestGroup/Desktop/AppDevQuest/Backend/Backend.csproj",
+        "projectUniqueName": "/Users/adam.miled/GitHub/AppDevQuest/Backend/Backend.csproj",
         "projectName": "Backend",
-        "projectPath": "/Users/adam.miled/Library/CloudStorage/OneDrive-HarvestGroup/Desktop/AppDevQuest/Backend/Backend.csproj",
+        "projectPath": "/Users/adam.miled/GitHub/AppDevQuest/Backend/Backend.csproj",
         "packagesPath": "/Users/adam.miled/.nuget/packages/",
-        "outputPath": "/Users/adam.miled/Library/CloudStorage/OneDrive-HarvestGroup/Desktop/AppDevQuest/Backend/obj/",
+        "outputPath": "/Users/adam.miled/GitHub/AppDevQuest/Backend/obj/",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "/Users/adam.miled/.nuget/NuGet/NuGet.Config"

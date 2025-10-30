@@ -4,6 +4,7 @@ import {
   Button,
   Card,
   CardContent,
+  Link,
   Stack,
   TextField,
   Typography,
@@ -16,11 +17,13 @@ export default function InvitationForm({ surveyId, onSent }) {
   const [sending, setSending] = useState(false);
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
+  const [previews, setPreviews] = useState([]);
 
   const handleSubmit = async (event) => {
     event.preventDefault();
     setMessage('');
     setError('');
+    setPreviews([]);
 
     const emailList = emails
       .split(/[\n,;]/)
@@ -35,16 +38,18 @@ export default function InvitationForm({ surveyId, onSent }) {
     setSending(true);
 
     try {
-      await sendInvitations(surveyId, {
+      const result = await sendInvitations(surveyId, {
         emails: emailList,
         expiresAt: expiresAt ? new Date(expiresAt).toISOString() : null,
       });
 
       setEmails('');
       setMessage('Invitations sent successfully.');
+      setPreviews(result?.previews ?? []);
       onSent?.();
     } catch (err) {
       setError(err.message ?? 'Failed to send invitations.');
+      setPreviews([]);
     } finally {
       setSending(false);
     }
@@ -63,6 +68,29 @@ export default function InvitationForm({ surveyId, onSent }) {
         <Stack component="form" onSubmit={handleSubmit} spacing={2} mt={2}>
           {message && <Alert severity="success">{message}</Alert>}
           {error && <Alert severity="error">{error}</Alert>}
+          {previews.length > 0 && (
+            <Alert severity="info">
+              <Typography fontWeight={600}>Test invitation links</Typography>
+              <Typography variant="body2" color="text.secondary">
+                Available in development so you can open the single-use links without sending real emails.
+              </Typography>
+              <Stack spacing={0.5} mt={1}>
+                {previews.map((preview) => (
+                  <Typography key={preview.link} variant="body2">
+                    {preview.email}:{' '}
+                    <Link
+                      href={preview.link}
+                      underline="hover"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      {preview.link}
+                    </Link>
+                  </Typography>
+                ))}
+              </Stack>
+            </Alert>
+          )}
 
           <TextField
             label="Recipient emails"

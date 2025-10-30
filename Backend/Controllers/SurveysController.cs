@@ -60,7 +60,12 @@ namespace Backend.Controllers
 
             try
             {
-                await _surveyService.SendInvitationsAsync(surveyId, request, cancellationToken);
+                var previews = await _surveyService.SendInvitationsAsync(surveyId, request, cancellationToken);
+                if (previews.Count > 0)
+                {
+                    return Ok(new { previews });
+                }
+
                 return Accepted();
             }
             catch (InvalidOperationException ex)

@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "SDVECAFldBg=",
+  "dgSpecHash": "fpxsNnhQb0A=",
   "success": true,
-  "projectFilePath": "/Users/adam.miled/Library/CloudStorage/OneDrive-HarvestGroup/Desktop/AppDevQuest/Backend/Backend.csproj",
+  "projectFilePath": "/Users/adam.miled/GitHub/AppDevQuest/Backend/Backend.csproj",
   "expectedPackageFiles": [
     "/Users/adam.miled/.nuget/packages/bcrypt.net-next/4.0.3/bcrypt.net-next.4.0.3.nupkg.sha512",
     "/Users/adam.miled/.nuget/packages/dapper/2.1.66/dapper.2.1.66.nupkg.sha512",

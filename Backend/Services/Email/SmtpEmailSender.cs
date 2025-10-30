@@ -24,16 +24,25 @@ namespace Backend.Services.Email
             string responseLink,
             CancellationToken cancellationToken)
         {
-            if (!string.IsNullOrWhiteSpace(_settings.OverrideDropDirectory))
+            var writeToDropDirectory = !string.IsNullOrWhiteSpace(_settings.OverrideDropDirectory);
+            var smtpConfigured =
+                !string.IsNullOrWhiteSpace(_settings.SmtpHost) &&
+                !string.IsNullOrWhiteSpace(_settings.FromAddress);
+
+            if (!writeToDropDirectory && !smtpConfigured)
             {
-                await WriteEmailToDropDirectory(recipientEmail, surveyTitle, responseLink, cancellationToken);
+                _logger.LogWarning("SMTP settings missing; skipping email send for {Recipient}", recipientEmail);
                 return;
             }
 
-            if (string.IsNullOrWhiteSpace(_settings.SmtpHost) ||
-                string.IsNullOrWhiteSpace(_settings.FromAddress))
+            if (writeToDropDirectory)
             {
-                _logger.LogWarning("SMTP settings missing; skipping email send for {Recipient}", recipientEmail);
+                await WriteEmailToDropDirectory(recipientEmail, surveyTitle, responseLink, cancellationToken);
+            }
+
+            if (!smtpConfigured)
+            {
+                _logger.LogInformation("Email saved to drop directory; SMTP send skipped for {Recipient}", recipientEmail);
                 return;
             }
 
@@ -47,7 +56,7 @@ namespace Backend.Services.Email
                 client.Credentials = new NetworkCredential(_settings.SmtpUsername, _settings.SmtpPassword);
             }
 
-            var message = new MailMessage
+            using var message = new MailMessage
             {
                 From = new MailAddress(_settings.FromAddress!, _settings.FromName),
                 Subject = $"You're invited: {surveyTitle}",
