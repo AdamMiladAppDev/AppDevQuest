@@ -4,7 +4,7 @@ on:
   push:
     branches: [ main ]
     paths:
-      - "backend/**"
+      - "Backend/**"
       - ".github/workflows/backend.yml"
   workflow_dispatch: {}
 
@@ -24,15 +24,15 @@ jobs:
           dotnet-version: "8.0.x"
 
       - name: Restore
-        working-directory: backend
+        working-directory: Backend
         run: dotnet restore
 
       - name: Build
-        working-directory: backend
+        working-directory: Backend
         run: dotnet build --configuration Release --no-restore
 
       - name: Publish
-        working-directory: backend
+        working-directory: Backend
         run: dotnet publish -c Release -o out
 
       - name: Azure Login (OIDC or service principal)
